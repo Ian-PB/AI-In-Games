@@ -3,6 +3,8 @@
 
 struct SteeringOutput
 {
+	bool realVelocity = false;
+
 	sf::Vector2f linear = { 0.0f, 0.0f };
 	sf::Vector2f angular = { 0.0f, 0.0f };
 };

@@ -3,13 +3,19 @@
 
 Flocking::Flocking(sf::Vector2f& t_npcPos, sf::Vector2f& t_npcVelocity, Npc t_allNpcs[], int t_ALL_NPCS_SIZE) : Behaviour(t_npcPos), npcVelocity(t_npcVelocity), allNpcs(t_allNpcs), ALL_NPCS_SIZE(t_ALL_NPCS_SIZE)
 {
-    detectionVisual.setFillColor({ 255, 255, 255, 10 });
+    npcsInfoInRange = new NpcInfo[ALL_NPCS_SIZE];
+
+    detectionVisual.setFillColor({ 255, 255, 255, 2 });
     detectionVisual.setRadius(detectionRadius);
     detectionVisual.setOrigin({ detectionRadius, detectionRadius });
 
-    seperationVisual.setFillColor({ 255, 0, 0, 10 });
+    seperationVisual.setFillColor({ 255, 0, 0, 2 });
     seperationVisual.setRadius(seperationRadius);
     seperationVisual.setOrigin({ seperationRadius, seperationRadius });
+}
+Flocking::~Flocking()
+{
+    delete[] npcsInfoInRange;
 }
 
 SteeringOutput Flocking::Movement()
@@ -31,18 +37,17 @@ SteeringOutput Flocking::Movement()
     sf::Vector2f cohesion = { 0.0f, 0.0f };
 
     sf::Vector2f averagePos = GetAveragePosOfNeighbours();
-    if (averagePos.x != 0.0f && averagePos.y != 0.0f)
+    sf::Vector2f dirToAverage = averagePos - npcPos;
+    if (dirToAverage.length() > 0.0f)
     {
-        sf::Vector2f dirToAverage = averagePos - npcPos;
-        cohesion = dirToAverage.normalized();
-        cohesion *= cohesionStrength;
+        cohesion = dirToAverage.normalized() * cohesionStrength;
     }
 
     // Alignment - Steer to align with average velocity of near npcs
     sf::Vector2f alignment = { 0.0f, 0.0f };
     alignment = GetAverageVelocityOfNeighbours();
 
-    if (alignment != sf::Vector2f(0.0f, 0.0f))
+    if (alignment.length() > 0.0f)
     {
         alignment = alignment.normalized();
         alignment *= alignmentStrength;
@@ -79,7 +84,7 @@ sf::Vector2f Flocking::GetAveragePosOfNeighbours()
         totalPos += npcsInfoInRange[i].position;
     }
 
-    sf::Vector2f averagePos = (totalPos / (float)amountOfNpcsInRange) - npcPos;
+    sf::Vector2f averagePos = (totalPos / (float)amountOfNpcsInRange);
 
     return averagePos;
 }
@@ -92,7 +97,7 @@ sf::Vector2f Flocking::GetAverageVelocityOfNeighbours()
         totalVelocity += npcsInfoInRange[i].velocity;
     }
 
-    sf::Vector2f averageVelocity = (totalVelocity / (float)amountOfNpcsInRange) - npcVelocity;
+    sf::Vector2f averageVelocity = (totalVelocity / (float)amountOfNpcsInRange);
 
     return averageVelocity;
 }
@@ -100,24 +105,40 @@ sf::Vector2f Flocking::GetAverageVelocityOfNeighbours()
 sf::Vector2f Flocking::GetSeperationFromNeighbours()
 {
     sf::Vector2f totalSeperation = { 0.0f, 0.0f };
+
     for (int i = 0; i < amountOfNpcsInRange; i++)
     {
         sf::Vector2f dirAway = npcPos - npcsInfoInRange[i].position;
-        if (dirAway.length() <= seperationRadius)
-            totalSeperation += dirAway;
 
+        float distance = dirAway.length();
+
+        if (distance > 0.0f && distance < seperationRadius)
+        {
+            totalSeperation += dirAway.normalized() / distance;
+        }
     }
+
     return totalSeperation;
 }
 
 void Flocking::SetNpcsInRange()
 {
-    npcsInfoInRange = new NpcInfo[ALL_NPCS_SIZE];
     amountOfNpcsInRange = 0;
 
     for (int i = 0; i < ALL_NPCS_SIZE; i++)
     {
         sf::Vector2f dirToNpc = npcPos - allNpcs[i].GetPos();
+
+        // Skip self
+        if (&allNpcs[i].GetPosRef() == &npcPos)
+        {
+            continue;
+        }
+        // Skip inactive npcs
+        if (!allNpcs[i].isActive())
+        {
+            continue;
+        }
 
         // Skip if not in range
         if (dirToNpc.length() > detectionRadius)
