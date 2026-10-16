@@ -7,6 +7,8 @@ class Swarming : public Behaviour
 {
 public:
 	Swarming(sf::Vector2f& t_npcPos, sf::Vector2f& t_npcVelocity, Npc t_allNpcs[], int t_ALL_NPCS_SIZE);
+	~Swarming();
+
 	virtual SteeringOutput Movement();
 	void Render(sf::RenderWindow& m_window) override;
 
@@ -18,9 +20,6 @@ private:
 		sf::Vector2f velocity;
 	};
 
-	sf::Vector2f GetAveragePosOfNeighbours();
-	sf::Vector2f GetAverageVelocityOfNeighbours();
-	sf::Vector2f GetSeperationFromNeighbours();
 	void SetNpcsInRange();
 
 	const int ALL_NPCS_SIZE;
@@ -30,13 +29,13 @@ private:
 
 	// Detection
 	sf::CircleShape detectionVisual;
-	float detectionRadius = 500.0f;
-	sf::CircleShape seperationVisual;
-	float seperationRadius = 50.0f;
+	float detectionRadius = 350.0f;
 
-	float cohesionStrength = 20.0f;
-	float alignmentStrength = 20.0f;
-	float seperationStrength = 0.1f;
+	// Lennard-Jones constants
+	const float A = 1500000.0f;
+	const float B = 500.0f;
+	const float N = 4.0f;
+	const float M = 2.0f;
 
 	sf::Vector2f& npcVelocity;
 };

@@ -173,11 +173,11 @@ void Game::update(sf::Time t_deltaTime)
 	{
 		m_window.close();
 	}
-	
-	player.Movement();
 
 	if (activeBehaviour == ActiveBehaviours::Mixed)
 	{
+		player.Movement();
+
 		for (int i = 0; i < MAX_NPC_AMOUNT; i++)
 			npcs[i].Movement(npcs, MAX_NPC_AMOUNT);
 	}
@@ -197,10 +197,11 @@ void Game::render()
 {
 	m_window.clear(NICE_BLUE);
 
-	player.Render(m_window);
 
 	if (activeBehaviour == ActiveBehaviours::Mixed)
 	{
+		player.Render(m_window);
+
 		for (int i = 0; i < MAX_NPC_AMOUNT; i++)
 			npcs[i].Render(m_window);
 
@@ -232,7 +233,20 @@ void Game::ToggleNpcs(sf::Event::KeyPressed t_keyPress)
 	}
 	else if (activeBehaviour == ActiveBehaviours::Groups)
 	{
-
+		if (sf::Keyboard::Key::F == t_keyPress.code)
+		{
+			for (int i = 0; i < GROUPING_AMOUNT; i++)
+			{
+				groupingNpcs[i].SetupBehaviour(new Flocking(groupingNpcs[i].GetPosRef(), groupingNpcs[i].GetVelocityRef(), groupingNpcs, GROUPING_AMOUNT));
+			}
+		}
+		else if (sf::Keyboard::Key::S == t_keyPress.code)
+		{
+			for (int i = 0; i < GROUPING_AMOUNT; i++)
+			{
+				groupingNpcs[i].SetupBehaviour(new Swarming(groupingNpcs[i].GetPosRef(), groupingNpcs[i].GetVelocityRef(), groupingNpcs, GROUPING_AMOUNT));
+			}
+		}
 	}
 }
 

@@ -62,7 +62,11 @@ private:
 	static const int MAX_NPC_AMOUNT = 5;
 	Npc npcs[MAX_NPC_AMOUNT];
 
-	static const int GROUPING_AMOUNT = 200;
+	// When trying to increase the amount of NPCs past around 500 the game crashes due to a stack overflow.
+	// But when trying out different amounts of NPCs there is more lag as you add more. This is because of the amount of for loops that occur when trying to find NPCs in range
+	// and controlling them individually.
+	// I found that between 100 and 200 works best for my setup since with too small of an amount it doesn't look as impressive.
+	static const int GROUPING_AMOUNT = 150;
 	Npc groupingNpcs[GROUPING_AMOUNT];
 
 	sf::Font font;

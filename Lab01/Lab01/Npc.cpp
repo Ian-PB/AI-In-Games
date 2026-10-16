@@ -61,10 +61,19 @@ void Npc::Movement(Npc t_objects[], int t_AMOUNT_OF_OBJECTS)
 	SteeringOutput behaviourSteering = behaviour->Movement();
 	totalSteering += behaviourSteering.linear;
 
-	// Normalize and * by speed after all steering is added
-	if (totalSteering.x != 0.0f && totalSteering.y != 0.0f)
-		totalSteering = totalSteering.normalized();
-	velocity += totalSteering * speed;
+	// Used for swarming
+	if (behaviourSteering.realVelocity)
+	{
+		velocity += totalSteering;
+	}
+	else
+	{
+		// Normalize and * by speed after all steering is added
+		if (totalSteering.length() > 0.0f)
+			totalSteering = totalSteering.normalized();
+
+		velocity += totalSteering * speed;
+	}
 
 	if (avoid)
 	{
