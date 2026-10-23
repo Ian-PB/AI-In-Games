@@ -12,4 +12,5 @@ void Game::Draw()
 
 void Game::Update()
 {
+	world.Update();
 }
